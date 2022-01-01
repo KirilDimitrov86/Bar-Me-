@@ -70,7 +70,7 @@ public class Main {
             double barLat = getBarCoordinates(dataIndex, 0);
             double barLon = getBarCoordinates(dataIndex, 1);
             data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
-            
+
         }
     }
 
