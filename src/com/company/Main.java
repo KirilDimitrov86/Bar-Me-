@@ -21,6 +21,7 @@ public class Main {
             {"Българе", "43.199471, 23.558079", "10:00", "1:00"}
     };
 
+
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
@@ -43,7 +44,83 @@ public class Main {
 
     }
 
-    public static double distance(double userLat, double userLon, double barLat, double barLon) { //distance is in km.
+    private static void listOfAll(double userLat, double userLon) { // TODO rename latAndLon
+
+        double[] distanceOfBars = new double[data.length];
+        for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
+            double barLat = getBarCoordinates(dataIndex, 0);
+            double barLon = getBarCoordinates(dataIndex, 1);
+            data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
+            distanceOfBars[dataIndex] = Double.parseDouble(data[dataIndex][1]);
+        }
+
+        print2DArray(sortDataByDistance(data,sortDataByDistance(distanceOfBars)));
+    }
+
+    private static void listOpen(double userLat, double userLon) { // TODO rename latAndLon
+
+        double[] closingTimeOfBars = new double[data.length];
+        for (int dataIndex = 0; dataIndex < data.length; dataIndex++){
+            double barLat = getBarCoordinates(dataIndex, 0);
+            double barLon = getBarCoordinates(dataIndex, 1);
+            data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
+            closingTimeOfBars[dataIndex] = Double.parseDouble(data[dataIndex][data.length-1]);
+        }
+        print2DArray(sortDataByDistance(data,sortDataByDistance(closingTimeOfBars)));
+    }
+
+    private static void map(double userLat, double userLon) { // TODO rename latAndLon
+    }
+
+    private static double[] sortDataByDistance(double[] data) {  //TODO rename data
+        for (int i = 1; i < data.length; i++) {
+            int j = i;
+            while (j > 0 && data[j - 1] > data[j]) {
+                double swap = data[j - 1];
+                data[j - 1] = data[j];
+                data[j] = swap;
+                j = j - 1;
+            }
+        }
+
+        return data;
+    }
+    
+    private static double getBarCoordinates(int arrayIndex, int elementIndex) {
+        return Double.parseDouble(splitArrayElement(arrayIndex,1,", ")[elementIndex]);
+    }
+
+    public static String[] splitArrayElement(int arrayIndex, int elementIndex, String splitBy ) { // TODO rename
+        String[] latAndLon = data[arrayIndex][elementIndex].split(splitBy);
+
+        return latAndLon;
+    }
+
+    public static String[] distanceOfBars(double[] data) {
+        String[] distanceOfBars = new String[data.length];
+        for (int i = 0; i < data.length; i++) {
+            distanceOfBars[i] = "" + data[i];
+        }
+        return distanceOfBars;
+    }
+
+    public static void print2DArray(String[][] toByPrinted) {
+        for (int i = 0; i < toByPrinted.length; i++) {
+            System.out.print(i+1 + "\t ");
+            for (int j = 0; j < toByPrinted[i].length; j++) {
+                System.out.print("| " + toByPrinted[i][j] + "\t\t\t\t\t\t\t\t");
+            }
+            System.out.println();
+        }
+    }
+
+    public static void printArray(double[] toByPrinted) {
+        for (int i = 0; i < toByPrinted.length; i++) {
+            System.out.println("| " + toByPrinted[i] + "\t\t\t\t\t\t\t\t");
+        }
+    }
+
+    public static double distance(double userLat, double userLon, double barLat, double barLon) { //distance is in m.
 
         int radius = 6371; //km
 
@@ -54,54 +131,18 @@ public class Main {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double d = radius * c;
 
-        return d;
+        return d * 1000;
     }
 
-    private static void map(double userLat, double userLon) {
-    }
-
-    private static void listOpen(double userLat, double userLon) {
-    }
-
-    private static void listOfAll(double userLat, double userLon) {
-
-
-        for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
-            double barLat = getBarCoordinates(dataIndex, 0);
-            double barLon = getBarCoordinates(dataIndex, 1);
-            data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
-
+    public static String[][] sortDataByDistance(String[][] data, double[] a) { // TODO rename
+        String[][] sorted = new String[data.length][data[0].length];
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data.length; j++) {
+                if (data[j][1].equals(distanceOfBars(a)[i])) {
+                   sorted[i] = data[j];
+                }
+            }
         }
-    }
-
-    private static void printData(String[][] sortedData) {
-        System.out.println(Arrays.toString(sortedData));
-    }
-
-//    private static String[][] sortDataByDistance() {
-//        for (int i = 1; i < data.length; i++) {
-//            int j = i;
-//            data [j][1]= Double.parseDouble();
-//            data[j][1] =
-//            while (j > 0 && data[j - 1][1] > data[j][1]) {
-//                int swap = array[j - 1];
-//                array[j - 1] = array[j];
-//                array[j] = swap;
-//                j = j - 1;
-//            }
-//        }
-//
-//        return data ;
-//    }
-
-
-    private static double getBarCoordinates(int dataIndex, int latAndLonIndex) {  // TO DO rename latAndLonIndex
-        return Double.parseDouble(splitLatAndLon(dataIndex)[latAndLonIndex]);
-    }
-
-    public static String[] splitLatAndLon(int dataIndex) {
-        String[] latAndLon = data[dataIndex][1].split(", ");
-
-        return latAndLon;
+        return sorted;
     }
 }
