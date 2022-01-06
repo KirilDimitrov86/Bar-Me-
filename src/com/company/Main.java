@@ -44,7 +44,7 @@ public class Main {
 
     }
 
-    private static void listOfAll(double userLat, double userLon) { // TODO rename latAndLon
+    public static void listOfAll(double userLat, double userLon) { // TODO rename latAndLon
 
         double[] distanceOfBars = new double[data.length];
         for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
@@ -53,26 +53,28 @@ public class Main {
             data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
             distanceOfBars[dataIndex] = Double.parseDouble(data[dataIndex][1]);
         }
-
-        print2DArray(sortDataByDistance(data,sortDataByDistance(distanceOfBars)));
+        print2DArray(sortDataByDistance(sortDistance(distanceOfBars)));
     }
 
-    private static void listOpen(double userLat, double userLon) { // TODO rename latAndLon
+    public static void listOpen(double userLat, double userLon) { // TODO rename latAndLon
 
-        double[] closingTimeOfBars = new double[data.length];
-        for (int dataIndex = 0; dataIndex < data.length; dataIndex++){
+        int[] closingTimeOfBars = new int[data.length];
+        for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
             double barLat = getBarCoordinates(dataIndex, 0);
             double barLon = getBarCoordinates(dataIndex, 1);
-            data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
-            closingTimeOfBars[dataIndex] = Double.parseDouble(data[dataIndex][data.length-1]);
+            data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);  // DATA WITH DISTANCE IN M.
+            data[dataIndex][data[dataIndex].length - 1] = "" + timeInMin(dataIndex, data[dataIndex].length - 1);
+            closingTimeOfBars[dataIndex] = Integer.parseInt(data[dataIndex][data[dataIndex].length - 1]);
         }
-        print2DArray(sortDataByDistance(data,sortDataByDistance(closingTimeOfBars)));
+        print2DArray(sortDataByClosingTime(sortClosingTime(closingTimeOfBars)));
+
     }
 
-    private static void map(double userLat, double userLon) { // TODO rename latAndLon
+
+    public static void map(double userLat, double userLon) { // TODO rename latAndLon
     }
 
-    private static double[] sortDataByDistance(double[] data) {  //TODO rename data
+    public static double[] sortDistance(double[] data) {  //TODO rename data
         for (int i = 1; i < data.length; i++) {
             int j = i;
             while (j > 0 && data[j - 1] > data[j]) {
@@ -85,18 +87,18 @@ public class Main {
 
         return data;
     }
-    
-    private static double getBarCoordinates(int arrayIndex, int elementIndex) {
-        return Double.parseDouble(splitArrayElement(arrayIndex,1,", ")[elementIndex]);
+
+    public static double getBarCoordinates(int arrayIndex, int elementIndex) {
+        return Double.parseDouble(splitArrayElement(arrayIndex, 1, ", ")[elementIndex]);
     }
 
-    public static String[] splitArrayElement(int arrayIndex, int elementIndex, String splitBy ) { // TODO rename
-        String[] latAndLon = data[arrayIndex][elementIndex].split(splitBy);
+    public static String[] splitArrayElement(int arrayIndex, int elementIndex, String splitBy) {
+        String[] splitElement = data[arrayIndex][elementIndex].split(splitBy);
 
-        return latAndLon;
+        return splitElement;
     }
 
-    public static String[] distanceOfBars(double[] data) {
+    public static String[] distanceOfBars(double[] data) {//TODO rename data
         String[] distanceOfBars = new String[data.length];
         for (int i = 0; i < data.length; i++) {
             distanceOfBars[i] = "" + data[i];
@@ -106,7 +108,7 @@ public class Main {
 
     public static void print2DArray(String[][] toByPrinted) {
         for (int i = 0; i < toByPrinted.length; i++) {
-            System.out.print(i+1 + "\t ");
+            System.out.print(i + 1 + "\t ");
             for (int j = 0; j < toByPrinted[i].length; j++) {
                 System.out.print("| " + toByPrinted[i][j] + "\t\t\t\t\t\t\t\t");
             }
@@ -134,15 +136,72 @@ public class Main {
         return d * 1000;
     }
 
-    public static String[][] sortDataByDistance(String[][] data, double[] a) { // TODO rename
+    public static String[][] sortDataByDistance(double[] a) { // TODO rename a
         String[][] sorted = new String[data.length][data[0].length];
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data.length; j++) {
                 if (data[j][1].equals(distanceOfBars(a)[i])) {
-                   sorted[i] = data[j];
+                    sorted[i] = data[j];
                 }
             }
         }
         return sorted;
+    }
+
+
+    // OPEN BARS
+    public static String[][] sortDataByClosingTime( int[] sortedTime) {
+
+        String[][] sorted = new String[data.length][data[0].length];
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data.length; j++) {
+                if (data[i][data[i].length-1].equalsIgnoreCase(intToStringArray(sortedTime)[j])) { // zapiswa pyrwite s ednakwo wreme mnogokratno
+                    sorted[j] = data[i];
+                }
+            }
+        }
+        return sorted;
+    }
+
+//    public static String[] closingTimeOfBars() {
+//        String[] closingTimeOfBars = new String[data.length];
+//        for (int i = 0; i < data.length; i++) {
+//            closingTimeOfBars[i] = "" + timeInMin(i, data.length-1);
+//        }
+//        return closingTimeOfBars;
+//    }
+
+    public static int[] sortClosingTime(int[] data) {  //TODO rename data = CLOSING TIME IN MIN
+        for (int i = 1; i < data.length; i++) {
+            int j = i;
+            while (j > 0 && data[j - 1] > data[j]) {
+                int swap = data[j - 1];
+                data[j - 1] = data[j];
+                data[j] = swap;
+                j = j - 1;
+            }
+        }
+
+        return data;
+    }
+
+    public static int timeInMin(int dataIndex, int elementIndex) {
+
+        int hours = Integer.parseInt(splitArrayElement(dataIndex, elementIndex, ":")[0]);
+        int min = Integer.parseInt(splitArrayElement(dataIndex, elementIndex, ":")[1]);
+        if (hours < 18){
+            hours+=24;
+        }
+        int totalMin = hours * 60 + min;
+
+        return totalMin;
+    }
+
+    public static String[] intToStringArray(int[] intArray) {
+        String[] stringArray = new String[intArray.length];
+        for (int i = 0; i < intArray.length; i++) {
+            stringArray[i] = "" + intArray[i];
+        }
+        return stringArray;
     }
 }
