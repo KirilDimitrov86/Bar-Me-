@@ -55,7 +55,7 @@ public class Main {
             data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
             distanceOfBars[dataIndex] = Double.parseDouble(data[dataIndex][1]);
         }
-        print2DArray(sortDataByDistance(sortDistance(distanceOfBars)));
+        print2DArray(sortBarsByDistance(sortDistance(distanceOfBars)));
     }
 
     public static void listOpen() {
@@ -65,35 +65,17 @@ public class Main {
         for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
             data[dataIndex][3] = "" + getClosingTimeInMin(getBarClosingTime(dataIndex));
             data[dataIndex][2] = "" + getOpeningTimeInMin(getBarOpeningTime(dataIndex));
-
             openingTimeOfBars[dataIndex] = Integer.parseInt(getBarOpeningTime(dataIndex));
             closingTimeOfBars[dataIndex] = Integer.parseInt(getBarClosingTime(dataIndex));
-
         }
 
-
-        print2DArray(getOpenBars(openingTimeOfBars, closingTimeOfBars));
-        // print2DArray(sortDataByClosingTime(sortClosingTime(closingTimeOfBars)));
-
+        print2DArray(sortDataByClosingTime(sortTimeInMin(closingTimeOfBars), openingTimeOfBars, closingTimeOfBars));
     }
 
 
     public static void map(double userLat, double userLon) { // TODO rename latAndLon
     }
 
-    public static double[] sortDistance(double[] data) {  //TODO rename data
-        for (int i = 1; i < data.length; i++) {
-            int j = i;
-            while (j > 0 && data[j - 1] > data[j]) {
-                double swap = data[j - 1];
-                data[j - 1] = data[j];
-                data[j] = swap;
-                j = j - 1;
-            }
-        }
-
-        return data;
-    }
 
     public static double getBarCoordinates(String text, int element) {
         return Double.parseDouble(splitText(text, ", ")[element]);
@@ -105,28 +87,50 @@ public class Main {
         return splitElement;
     }
 
-    public static String[] distanceOfBars(double[] data) {//TODO rename data
-        String[] distanceOfBars = new String[data.length];
-        for (int i = 0; i < data.length; i++) {
-            distanceOfBars[i] = "" + data[i];
-        }
-        return distanceOfBars;
-    }
 
     public static void print2DArray(String[][] toByPrinted) {
         for (int i = 0; i < toByPrinted.length; i++) {
             System.out.print(i + 1 + "\t ");
             for (int j = 0; j < toByPrinted[i].length; j++) {
-                System.out.print("| " + toByPrinted[i][j] + "\t\t\t\t\t\t\t\t");
+                System.out.print("|\t\t\t\t " + toByPrinted[i][j] + "\t\t\t\t");
             }
             System.out.println();
         }
     }
 
-    public static void printArray(int[] toByPrinted) {
-        for (int i = 0; i < toByPrinted.length; i++) {
-            System.out.println("| " + toByPrinted[i] + "\t\t\t\t\t\t\t\t");
+
+    public static String[][] sortBarsByDistance(double[] distance) {
+        String[][] sorted = new String[data.length][data[0].length];
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data.length; j++) {
+                if (data[j][1].equals(distanceOfBars(distance)[i])) {
+                    sorted[i] = data[j];
+                }
+            }
         }
+        return sorted;
+    }
+
+    public static double[] sortDistance(double[] distance) {
+        for (int i = 1; i < distance.length; i++) {
+            int j = i;
+            while (j > 0 && distance[j - 1] > distance[j]) {
+                double swap = distance[j - 1];
+                distance[j - 1] = distance[j];
+                distance[j] = swap;
+                j = j - 1;
+            }
+        }
+
+        return distance;
+    }
+
+    public static String[] distanceOfBars(double[] distance) {
+        String[] distanceOfBars = new String[distance.length];
+        for (int i = 0; i < distance.length; i++) {
+            distanceOfBars[i] = "" + distance[i];
+        }
+        return distanceOfBars;
     }
 
     public static double distance(double userLat, double userLon, double barLat, double barLon) { //distance is in m.
@@ -143,48 +147,50 @@ public class Main {
         return d * 1000;
     }
 
-    public static String[][] sortDataByDistance(double[] a) { // TODO rename a
-        String[][] sorted = new String[data.length][data[0].length];
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data.length; j++) {
-                if (data[j][1].equals(distanceOfBars(a)[i])) {
-                    sorted[i] = data[j];
-                }
-            }
-        }
-        return sorted;
-    }
-
-
     // OPEN BARS
-    public static String[][] sortDataByClosingTime(int[] sortedTime) {
-
-        String[][] sorted = new String[data.length][3];
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data.length; j++) {
-                if (sorted[j][0] == null) {
-                    if (data[i][3].equals(intToStringArray(sortedTime)[j])) { 
-                        sorted[j] = data[i];
-                        break;
-                    }
+    public static String[][] sortDataByClosingTime(int[] sortedTime, int[] openingTime, int[] closingTime) { //TODO check openBar length
+        String[][] openBars = new String[getOpenBarsLength(openingTime, closingTime)][3];
+        openBars = getOpenBars(openingTime, closingTime);
+        String[][] sorted = new String[openBars.length][3];
+        int counter = 0;
+        for (int i = 0; i < sortedTime.length; i++) {
+            for (int j = 0; j < openBars.length; j++) {
+                if (openBars[j][2] == null) {
+                    break;
+                }
+                if (openBars[j][2].equals(intToStringArray(sortedTime)[i])) {
+                    sorted[counter] = openBars[j];
+                    sorted[counter][1] = getTimeInHours(openBars[j][1]);
+                    sorted[counter][2] = getTimeInHours(openBars[j][2]);
+                    counter++;
+                    break;
                 }
             }
         }
         return sorted;
     }
 
-    public static int[] sortClosingTime(int[] data) {  //TODO rename data =  TIME IN MIN, SORT_TIME- TO USE IN OPEN TIME
-        for (int i = 1; i < data.length; i++) {
+    public static int[] sortTimeInMin(int[] time) {
+        for (int i = 1; i < time.length; i++) {
             int j = i;
-            while (j > 0 && data[j - 1] > data[j]) {
-                int swap = data[j - 1];
-                data[j - 1] = data[j];
-                data[j] = swap;
+            while (j > 0 && time[j - 1] > time[j]) {
+                int swap = time[j - 1];
+                time[j - 1] = time[j];
+                time[j] = swap;
                 j = j - 1;
             }
         }
 
-        return data;
+        return time;
+    }
+
+    public static int getOpeningTimeInMin(String element) {
+        int hours = Integer.parseInt(splitText(element, ":")[0]);
+        int min = Integer.parseInt(splitText(element, ":")[1]);
+
+        int totalMin = hours * 60 + min;
+
+        return totalMin;
     }
 
     public static int getClosingTimeInMin(String element) {
@@ -199,13 +205,17 @@ public class Main {
         return totalMin;
     }
 
-    public static int getOpeningTimeInMin(String element) {
-        int hours = Integer.parseInt(splitText(element, ":")[0]);
-        int min = Integer.parseInt(splitText(element, ":")[1]);
-
-        int totalMin = hours * 60 + min;
-
-        return totalMin;
+    public static String getTimeInHours(String element) {
+        int totalMin = Integer.parseInt(element);
+        int hours = totalMin / 60;
+        int min = totalMin % 60;
+        if (hours >= 24) {
+            hours -= 24;
+        }
+        if (min < 10) {
+            return "" + hours + ":" + min + "0" + " ч";
+        }
+        return "" + hours + ":" + min + " ч";
     }
 
     public static String[] intToStringArray(int[] intArray) {
@@ -237,6 +247,7 @@ public class Main {
 
     public static String[][] getOpenBars(int[] openingTime, int[] closingTime) {
         String[][] openBar = new String[getOpenBarsLength(openingTime, closingTime)][3];
+
         int counter = 0;
         for (int i = 0; i < openingTime.length; i++) {
             if (openingTime[i] <= getCurrentTimeInMin() && closingTime[i] >= getCurrentTimeInMin()) {
