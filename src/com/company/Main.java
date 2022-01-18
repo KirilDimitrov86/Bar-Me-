@@ -74,6 +74,23 @@ public class Main {
 
 
     public static void map(double userLat, double userLon) { // TODO rename latAndLon
+        double[][][] mapOfCoordinates = getMapOfCoordinates(userLat, userLon);
+        char[][] map = new char[mapOfCoordinates.length][mapOfCoordinates[0].length];
+        for (int i = 0; i < mapOfCoordinates.length; i++) {
+            for (int j = 0; j < mapOfCoordinates[i].length; j++) {
+                for (int k = 0; k < data.length; k++) {
+                    if (isBarHere(i, j, k, mapOfCoordinates)) {
+                      // mapOfCoordinates[i][j][0] = getBarCoordinates(data[k][1], 0);
+                        map[i][j] = (char) k;
+                        break;
+                    } else {
+                        map[i][j] = 32;
+                    }
+                }
+                System.out.print(map[i][j]);
+            }
+            System.out.println();
+        }
     }
 
 
@@ -276,4 +293,51 @@ public class Main {
         return data[i][0];
     }
 
+    //MAP
+
+    private static double[][][] getMapOfCoordinates(double userLat, double userLon) {
+        double[][][] map = new double[100][100][2];       // decide map size and map dimensions
+        double startLat = userLat - ((map.length/2) * 0.00001); //if square
+        double startLon = userLon - ((map.length/2) * 0.00001);
+        map[0][0][0] = startLat;
+        map[0][0][1] = startLon;
+
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[i].length; j++) {
+                if (j == 0) {
+                    map[i][j][0] = startLat;
+                    map[j][i][1] = startLon;
+                } else {
+                    map[i][j][0] = map[i][j - 1][0] + 0.00001;
+                    map[j][i][1] = map[j - 1][i][0] + 0.00001;
+                }
+            }
+        }
+        return map;
+    }
+
+    public static boolean isBarHere(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) { //TODO RENAME
+        if (mapOfCoordinates[index][elementIndex][0] == getBarCoordinates(data[indexForData][1], 0) &&  // check for near coordinates not seam
+                mapOfCoordinates[index][elementIndex][1] == getBarCoordinates(data[indexForData][1], 1)) { //check index out of bounce
+
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isBarLon(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) {
+        if (mapOfCoordinates[index - 1][elementIndex][0] <= getBarCoordinates(data[indexForData][1], 0) &&  // check for near coordinates not seam
+                mapOfCoordinates[index][elementIndex][0] >= getBarCoordinates(data[indexForData][1], 0)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static double differenceLat(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) {
+        return Math.abs(mapOfCoordinates[index][elementIndex][0] - getBarCoordinates(data[indexForData][1], 0));
+    }
+
+    public static double differenceLon(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) {
+        return Math.abs(mapOfCoordinates[index][elementIndex][1] - getBarCoordinates(data[indexForData][1], 1));
+    }
 }
