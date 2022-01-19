@@ -27,8 +27,15 @@ public class Main {
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Моля въведете географска дължина");
         double userLatitude = Double.parseDouble(scanner.nextLine());
+        System.out.println("Моля въведете географска ширина");
         double userLongitude = Double.parseDouble(scanner.nextLine());
+        System.out.println("Моля въведете опция");
+        System.out.println("(1) за списък на всички барове подредени по разстояние от вас(в м.).");
+        System.out.println("(2) за списък на всички барове които са отворени в момента.)");
+        System.out.println("(3) за карта.");
+
         int choice = Integer.parseInt(scanner.nextLine());
         switch (choice) {
             case 1:
@@ -286,7 +293,7 @@ public class Main {
                     if (amIHere(i, j, mapOfCoordinates)) {
                         map[i][j] = 'x';
                         break;
-                    }else if (isBarHere(i, j, k, mapOfCoordinates)) {
+                    } else if (isBarHere(i, j, k, mapOfCoordinates)) {
                         map[i][j] = barNum;
                         barNum++;
                         break;
@@ -304,8 +311,8 @@ public class Main {
         userLon *= 10000;
         int lat = (int) userLat;
         int lon = (int) userLon;
-        int startLat = lat - ((map.length / 2) * 1); //if square
-        int startLon = lon - ((map.length / 2) * 1);
+        int startLat = lat - (map.length / 2); //if square
+        int startLon = lon - (map.length / 2);
         map[0][0][0] = startLat;
         map[0][0][1] = startLon;
 
@@ -331,7 +338,7 @@ public class Main {
 
     public static void printMapLegend(int[][][] mapOfCoordinates) {
         char barSymbol = 'a';
-        System.out.println("x-\t"+"ти си тук");
+        System.out.println("x-\t" + "ти си тук");
         for (int i = 0; i < mapOfCoordinates.length; i++) {
             for (int j = 0; j < mapOfCoordinates[i].length; j++) {
                 for (int k = 0; k < data.length; k++) {
@@ -347,15 +354,15 @@ public class Main {
     public static void printMap(char map[][]) {
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map[i].length; j++) {
-                System.out.print(map[i][j]+ "\t");
+                System.out.print(map[i][j] + "\t");
             }
             System.out.println();
         }
     }
 
     public static boolean amIHere(int index, int elementIndex, int[][][] map) { //TODO RENAME
-        if (map[index][elementIndex][0] ==map[map.length/2][map[index].length/2][0]  &&  // check for near coordinates not seam
-                map[index][elementIndex][1] ==map[map.length/2][map[index].length/2][1] ) { //check index out of bounce
+        if (map[index][elementIndex][0] == map[map.length / 2][map[index].length / 2][0] &&
+                map[index][elementIndex][1] == map[map.length / 2][map[index].length / 2][1]) {
 
             return true;
         }
@@ -363,8 +370,8 @@ public class Main {
     }
 
     public static boolean isBarHere(int index, int elementIndex, int indexForData, int[][][] mapOfCoordinates) { //TODO RENAME
-        if (mapOfCoordinates[index][elementIndex][0] == getBarCoordinatesAsInt(data[indexForData][1], 0) &&  // check for near coordinates not seam
-                mapOfCoordinates[index][elementIndex][1] == getBarCoordinatesAsInt(data[indexForData][1], 1)) { //check index out of bounce
+        if (mapOfCoordinates[index][elementIndex][0] == getBarCoordinatesAsInt(data[indexForData][1], 0) &&
+                mapOfCoordinates[index][elementIndex][1] == getBarCoordinatesAsInt(data[indexForData][1], 1)) {
 
             return true;
         }
