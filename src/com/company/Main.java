@@ -72,27 +72,13 @@ public class Main {
         print2DArray(sortDataByClosingTime(sortTimeInMin(closingTimeOfBars), openingTimeOfBars, closingTimeOfBars));
     }
 
-
     public static void map(double userLat, double userLon) { // TODO rename latAndLon
-        double[][][] mapOfCoordinates = getMapOfCoordinates(userLat, userLon);
+        int[][][] mapOfCoordinates = getMapOfCoordinates(userLat, userLon);
         char[][] map = new char[mapOfCoordinates.length][mapOfCoordinates[0].length];
-        for (int i = 0; i < mapOfCoordinates.length; i++) {
-            for (int j = 0; j < mapOfCoordinates[i].length; j++) {
-                for (int k = 0; k < data.length; k++) {
-                    if (isBarHere(i, j, k, mapOfCoordinates)) {
-                      // mapOfCoordinates[i][j][0] = getBarCoordinates(data[k][1], 0);
-                        map[i][j] = (char) k;
-                        break;
-                    } else {
-                        map[i][j] = 32;
-                    }
-                }
-                System.out.print(map[i][j]);
-            }
-            System.out.println();
-        }
+        loadMap(mapOfCoordinates, map);
+        printMap(map);
+        printMapLegend(mapOfCoordinates);
     }
-
 
     public static double getBarCoordinates(String text, int element) {
         return Double.parseDouble(splitText(text, ", ")[element]);
@@ -104,7 +90,6 @@ public class Main {
         return splitElement;
     }
 
-
     public static void print2DArray(String[][] toByPrinted) {
         for (int i = 0; i < toByPrinted.length; i++) {
             System.out.print(i + 1 + "\t ");
@@ -114,7 +99,6 @@ public class Main {
             System.out.println();
         }
     }
-
 
     public static String[][] sortBarsByDistance(double[] distance) {
         String[][] sorted = new String[data.length][data[0].length];
@@ -277,28 +261,51 @@ public class Main {
         return openBar;
     }
 
-    private static String getBarClosingTime(int i) {
+    public static String getBarClosingTime(int i) {
         return data[i][3];
     }
 
-    private static String getBarOpeningTime(int i) {
+    public static String getBarOpeningTime(int i) {
         return data[i][2];
     }
 
-    private static String getBarCoordinates(int i) {
+    public static String getBarCoordinates(int i) {
         return data[i][1];
     }
 
-    private static String getBarName(int i) {
+    public static String getBarName(int i) {
         return data[i][0];
     }
 
     //MAP
+    private static void loadMap(int[][][] mapOfCoordinates, char[][] map) {
+        char barNum = 'a';
+        for (int i = 0; i < mapOfCoordinates.length; i++) {
+            for (int j = 0; j < mapOfCoordinates[i].length; j++) {
+                for (int k = 0; k < data.length; k++) {
+                    if (amIHere(i, j, mapOfCoordinates)) {
+                        map[i][j] = 'x';
+                        break;
+                    }else if (isBarHere(i, j, k, mapOfCoordinates)) {
+                        map[i][j] = barNum;
+                        barNum++;
+                        break;
+                    } else {
+                        map[i][j] = 32;
+                    }
+                }
+            }
+        }
+    }
 
-    private static double[][][] getMapOfCoordinates(double userLat, double userLon) {
-        double[][][] map = new double[100][100][2];       // decide map size and map dimensions
-        double startLat = userLat - ((map.length/2) * 0.00001); //if square
-        double startLon = userLon - ((map.length/2) * 0.00001);
+    public static int[][][] getMapOfCoordinates(double userLat, double userLon) { //change map size and distance between cells
+        int[][][] map = new int[50][50][2];       // decide map size and map dimensions
+        userLat *= 10000;
+        userLon *= 10000;
+        int lat = (int) userLat;
+        int lon = (int) userLon;
+        int startLat = lat - ((map.length / 2) * 1); //if square
+        int startLon = lon - ((map.length / 2) * 1);
         map[0][0][0] = startLat;
         map[0][0][1] = startLon;
 
@@ -308,36 +315,59 @@ public class Main {
                     map[i][j][0] = startLat;
                     map[j][i][1] = startLon;
                 } else {
-                    map[i][j][0] = map[i][j - 1][0] + 0.00001;
-                    map[j][i][1] = map[j - 1][i][0] + 0.00001;
+                    map[i][j][0] = map[i][j - 1][0] + 1;
+                    map[j][i][1] = map[j - 1][i][1] + 1;
                 }
             }
         }
         return map;
     }
 
-    public static boolean isBarHere(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) { //TODO RENAME
-        if (mapOfCoordinates[index][elementIndex][0] == getBarCoordinates(data[indexForData][1], 0) &&  // check for near coordinates not seam
-                mapOfCoordinates[index][elementIndex][1] == getBarCoordinates(data[indexForData][1], 1)) { //check index out of bounce
+    public static int getBarCoordinatesAsInt(String text, int element) {
+        double coordinates = Double.parseDouble(splitText(text, ", ")[element]);
+        coordinates *= 10000;
+        return (int) coordinates;
+    }
+
+    public static void printMapLegend(int[][][] mapOfCoordinates) {
+        char barSymbol = 'a';
+        System.out.println("x-\t"+"ти си тук");
+        for (int i = 0; i < mapOfCoordinates.length; i++) {
+            for (int j = 0; j < mapOfCoordinates[i].length; j++) {
+                for (int k = 0; k < data.length; k++) {
+                    if (isBarHere(i, j, k, mapOfCoordinates)) {
+                        System.out.println(barSymbol + "-\t" + getBarName(k));
+                        barSymbol++;
+                    }
+                }
+            }
+        }
+    }
+
+    public static void printMap(char map[][]) {
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[i].length; j++) {
+                System.out.print(map[i][j]+ "\t");
+            }
+            System.out.println();
+        }
+    }
+
+    public static boolean amIHere(int index, int elementIndex, int[][][] map) { //TODO RENAME
+        if (map[index][elementIndex][0] ==map[map.length/2][map[index].length/2][0]  &&  // check for near coordinates not seam
+                map[index][elementIndex][1] ==map[map.length/2][map[index].length/2][1] ) { //check index out of bounce
 
             return true;
         }
         return false;
     }
 
-    public static boolean isBarLon(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) {
-        if (mapOfCoordinates[index - 1][elementIndex][0] <= getBarCoordinates(data[indexForData][1], 0) &&  // check for near coordinates not seam
-                mapOfCoordinates[index][elementIndex][0] >= getBarCoordinates(data[indexForData][1], 0)) {
+    public static boolean isBarHere(int index, int elementIndex, int indexForData, int[][][] mapOfCoordinates) { //TODO RENAME
+        if (mapOfCoordinates[index][elementIndex][0] == getBarCoordinatesAsInt(data[indexForData][1], 0) &&  // check for near coordinates not seam
+                mapOfCoordinates[index][elementIndex][1] == getBarCoordinatesAsInt(data[indexForData][1], 1)) { //check index out of bounce
+
             return true;
         }
         return false;
-    }
-
-    public static double differenceLat(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) {
-        return Math.abs(mapOfCoordinates[index][elementIndex][0] - getBarCoordinates(data[indexForData][1], 0));
-    }
-
-    public static double differenceLon(int index, int elementIndex, int indexForData, double[][][] mapOfCoordinates) {
-        return Math.abs(mapOfCoordinates[index][elementIndex][1] - getBarCoordinates(data[indexForData][1], 1));
     }
 }
