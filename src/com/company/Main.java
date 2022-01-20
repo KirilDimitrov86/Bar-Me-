@@ -3,6 +3,7 @@ package com.company;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 
 public class Main {
@@ -23,20 +24,17 @@ public class Main {
             {"Българе", "43.199471, 23.558079", "10:00", "1:00"}
     };
 
-
+    static Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-
-        Scanner scanner = new Scanner(System.in);
         System.out.println("Моля въведете географска дължина");
-        double userLatitude = Double.parseDouble(scanner.nextLine());
+        double userLatitude = getDoubleInput();
         System.out.println("Моля въведете географска ширина");
-        double userLongitude = Double.parseDouble(scanner.nextLine());
+        double userLongitude = getDoubleInput();
         System.out.println("Моля въведете опция");
         System.out.println("(1) за списък на всички барове подредени по разстояние от вас(в м.).");
         System.out.println("(2) за списък на всички барове които са отворени в момента.)");
         System.out.println("(3) за карта.");
-
-        int choice = Integer.parseInt(scanner.nextLine());
+        int choice = getIntegerInput();
         switch (choice) {
             case 1:
                 listOfAll(userLatitude, userLongitude);
@@ -50,18 +48,18 @@ public class Main {
             default:
                 System.out.println("Invalid input");
         }
-
     }
 
     public static void listOfAll(double userLat, double userLon) { // TODO rename latAndLon
-
-        double[] distanceOfBars = new double[data.length];
+        int[] distanceOfBars = new int[data.length];
         for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
             double barLat = getBarCoordinates(getBarCoordinates(dataIndex), 0);
             double barLon = getBarCoordinates(getBarCoordinates(dataIndex), 1);
             data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
-            distanceOfBars[dataIndex] = Double.parseDouble(data[dataIndex][1]);
+            distanceOfBars[dataIndex] = Integer.parseInt(data[dataIndex][1]);
         }
+
+        System.out.println("№ \t\t\t\t\t" + "ИМЕ НА БАРА\t\t\t\t" + " РАЗСТОЯНИЕ ДО БАРА\t\t\t\t\t\t" + " ОТВАРЯ В\t\t\t\t\t\t" + " ЗАТВАРЯ В");
         print2DArray(sortBarsByDistance(sortDistance(distanceOfBars)));
     }
 
@@ -75,7 +73,7 @@ public class Main {
             openingTimeOfBars[dataIndex] = Integer.parseInt(getBarOpeningTime(dataIndex));
             closingTimeOfBars[dataIndex] = Integer.parseInt(getBarClosingTime(dataIndex));
         }
-
+        System.out.println("№ \t\t\t\t\t" + "ИМЕ НА БАРА\t\t\t\t\t\t\t"  + " ОТВАРЯ В\t\t\t\t\t\t\t" + " ЗАТВАРЯ В");
         print2DArray(sortDataByClosingTime(sortTimeInMin(closingTimeOfBars), openingTimeOfBars, closingTimeOfBars));
     }
 
@@ -107,7 +105,7 @@ public class Main {
         }
     }
 
-    public static String[][] sortBarsByDistance(double[] distance) {
+    public static String[][] sortBarsByDistance(int[] distance) {
         String[][] sorted = new String[data.length][data[0].length];
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data.length; j++) {
@@ -119,11 +117,11 @@ public class Main {
         return sorted;
     }
 
-    public static double[] sortDistance(double[] distance) {
+    public static int[] sortDistance(int[] distance) {
         for (int i = 1; i < distance.length; i++) {
             int j = i;
             while (j > 0 && distance[j - 1] > distance[j]) {
-                double swap = distance[j - 1];
+                int swap = distance[j - 1];
                 distance[j - 1] = distance[j];
                 distance[j] = swap;
                 j = j - 1;
@@ -133,7 +131,7 @@ public class Main {
         return distance;
     }
 
-    public static String[] distanceOfBars(double[] distance) {
+    public static String[] distanceOfBars(int[] distance) {
         String[] distanceOfBars = new String[distance.length];
         for (int i = 0; i < distance.length; i++) {
             distanceOfBars[i] = "" + distance[i];
@@ -141,7 +139,7 @@ public class Main {
         return distanceOfBars;
     }
 
-    public static double distance(double userLat, double userLon, double barLat, double barLon) { //distance is in m.
+    public static int distance(double userLat, double userLon, double barLat, double barLon) { //distance is in m.
 
         int radius = 6371; //km
 
@@ -152,7 +150,7 @@ public class Main {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double d = radius * c;
 
-        return d * 1000;
+        return (int) (d * 1000);
     }
 
     // OPEN BARS
@@ -376,5 +374,25 @@ public class Main {
             return true;
         }
         return false;
+    }
+    public static double getDoubleInput(){
+        String input = scanner.nextLine();
+        while (!isNumeric(input)){
+            input = scanner.nextLine();
+        }
+        return Double.parseDouble(input);
+    }
+
+    public static int getIntegerInput(){
+        String input = scanner.nextLine();
+        while (!isNumeric(input)){
+            input = scanner.nextLine();
+        }
+        return Integer.parseInt(input);
+    }
+
+    public static boolean isNumeric(String string) {
+        String regex = "[0-9]+[\\.]?[0-9]*";
+        return Pattern.matches(regex, string);
     }
 }
