@@ -1,13 +1,11 @@
 package com.company;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.Pattern;
-import java.util.zip.DataFormatException;
 
 public class Main {
-    public static String[][] data = {
+    public static String[][] bars = {
             {"Тракийска принцеса", "43.204797, 23.552098", "8:30", "0:00"},
             {"Бижу", "43.205215, 23.556284", "6:00", "2:00"},
             {"Винарна", "43.205612, 23.554023", "10:30", "1:30"},
@@ -25,10 +23,11 @@ public class Main {
     };
 
     static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
-        System.out.println("Моля въведете географска дължина");
+        System.out.print("Моля въведете географска дължина: ");
         double userLatitude = getDoubleInput();
-        System.out.println("Моля въведете географска ширина");
+        System.out.print("Моля въведете географска ширина: ");
         double userLongitude = getDoubleInput();
         System.out.println("Моля въведете опция");
         System.out.println("(1) за списък на всички барове подредени по разстояние от вас(в м.).");
@@ -50,13 +49,13 @@ public class Main {
         }
     }
 
-    public static void listOfAll(double userLat, double userLon) { // TODO rename latAndLon
-        int[] distanceOfBars = new int[data.length];
-        for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
+    public static void listOfAll(double userLatitude, double userLongitude) {
+        int[] distanceOfBars = new int[bars.length];
+        for (int dataIndex = 0; dataIndex < bars.length; dataIndex++) {
             double barLat = getBarCoordinates(getBarCoordinates(dataIndex), 0);
             double barLon = getBarCoordinates(getBarCoordinates(dataIndex), 1);
-            data[dataIndex][1] = "" + distance(userLat, userLon, barLat, barLon);
-            distanceOfBars[dataIndex] = Integer.parseInt(data[dataIndex][1]);
+            bars[dataIndex][1] = "" + getDistance(userLatitude, userLongitude, barLat, barLon);
+            distanceOfBars[dataIndex] = Integer.parseInt(bars[dataIndex][1]);
         }
 
         System.out.println("№ \t\t\t\t\t" + "ИМЕ НА БАРА\t\t\t\t" + " РАЗСТОЯНИЕ ДО БАРА\t\t\t\t\t\t" + " ОТВАРЯ В\t\t\t\t\t\t" + " ЗАТВАРЯ В");
@@ -64,57 +63,45 @@ public class Main {
     }
 
     public static void listOpen() {
-        int[] openingTimeOfBars = new int[data.length];
-        int[] closingTimeOfBars = new int[data.length];
+        int[] openingTimeOfBars = new int[bars.length];
+        int[] closingTimeOfBars = new int[bars.length];
 
-        for (int dataIndex = 0; dataIndex < data.length; dataIndex++) {
-            data[dataIndex][3] = "" + getClosingTimeInMin(getBarClosingTime(dataIndex));
-            data[dataIndex][2] = "" + getOpeningTimeInMin(getBarOpeningTime(dataIndex));
+        for (int dataIndex = 0; dataIndex < bars.length; dataIndex++) {
+            bars[dataIndex][3] = "" + getClosingTimeInMin(getBarClosingTime(dataIndex));
+            bars[dataIndex][2] = "" + getOpeningTimeInMin(getBarOpeningTime(dataIndex));
             openingTimeOfBars[dataIndex] = Integer.parseInt(getBarOpeningTime(dataIndex));
             closingTimeOfBars[dataIndex] = Integer.parseInt(getBarClosingTime(dataIndex));
         }
-        System.out.println("№ \t\t\t\t\t" + "ИМЕ НА БАРА\t\t\t\t\t\t\t"  + " ОТВАРЯ В\t\t\t\t\t\t\t" + " ЗАТВАРЯ В");
+        System.out.println("№ \t\t\t\t\t" + "ИМЕ НА БАРА\t\t\t\t\t\t\t" + " ОТВАРЯ В\t\t\t\t\t\t\t" + " ЗАТВАРЯ В");
         print2DArray(sortDataByClosingTime(sortTimeInMin(closingTimeOfBars), openingTimeOfBars, closingTimeOfBars));
     }
 
-    public static void map(double userLat, double userLon) { // TODO rename latAndLon
-        int[][][] mapOfCoordinates = getMapOfCoordinates(userLat, userLon);
+    public static void map(double userLatitude, double userLongitude) {
+        int[][][] mapOfCoordinates = getMapOfCoordinates(userLatitude, userLongitude);
         char[][] map = new char[mapOfCoordinates.length][mapOfCoordinates[0].length];
         loadMap(mapOfCoordinates, map);
         printMap(map);
         printMapLegend(mapOfCoordinates);
     }
 
-    public static double getBarCoordinates(String text, int element) {
-        return Double.parseDouble(splitText(text, ", ")[element]);
-    }
-
-    public static String[] splitText(String text, String splitBy) {
-        String[] splitElement = text.split(splitBy);
-
-        return splitElement;
-    }
-
-    public static void print2DArray(String[][] toByPrinted) {
-        for (int i = 0; i < toByPrinted.length; i++) {
-            System.out.print(i + 1 + "\t ");
-            for (int j = 0; j < toByPrinted[i].length; j++) {
-                System.out.print("|\t\t\t\t " + toByPrinted[i][j] + "\t\t\t\t");
-            }
-            System.out.println();
-        }
-    }
-
     public static String[][] sortBarsByDistance(int[] distance) {
-        String[][] sorted = new String[data.length][data[0].length];
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data.length; j++) {
-                if (data[j][1].equals(distanceOfBars(distance)[i])) {
-                    sorted[i] = data[j];
+        String[][] sorted = new String[bars.length][bars[0].length];
+        for (int i = 0; i < bars.length; i++) {
+            for (int j = 0; j < bars.length; j++) {
+                if (bars[j][1].equals(getDistanceOfBars(distance)[i])) {
+                    sorted[i] = bars[j];
                 }
             }
         }
         return sorted;
+    }
+
+    public static String[] getDistanceOfBars(int[] distance) {
+        String[] distanceOfBars = new String[distance.length];
+        for (int i = 0; i < distance.length; i++) {
+            distanceOfBars[i] = "" + distance[i];
+        }
+        return distanceOfBars;
     }
 
     public static int[] sortDistance(int[] distance) {
@@ -131,31 +118,57 @@ public class Main {
         return distance;
     }
 
-    public static String[] distanceOfBars(int[] distance) {
-        String[] distanceOfBars = new String[distance.length];
-        for (int i = 0; i < distance.length; i++) {
-            distanceOfBars[i] = "" + distance[i];
-        }
-        return distanceOfBars;
+    public static double getBarCoordinates(String text, int element) {
+        return Double.parseDouble(splitText(text, ", ")[element]);
     }
 
-    public static int distance(double userLat, double userLon, double barLat, double barLon) { //distance is in m.
+    public static String[] splitText(String text, String splitBy) {
+        String[] splitElement = text.split(splitBy);
 
-        int radius = 6371; //km
+        return splitElement;
+    }
 
-        double difLat = Math.toRadians(barLat - userLat);
-        double difLon = Math.toRadians(barLon - userLon);
-        double a = Math.sin(difLat / 2) * Math.sin(difLat / 2) + Math.cos(Math.toRadians(userLat))
-                * Math.cos(Math.toRadians(barLat)) * Math.sin(difLon / 2) * Math.sin(difLon / 2);
+    public static int getDistance(double userLatitude, double userLongitude, double barLatitude, double barLongitude) { //distance is in m.
+        int radius = 6371;
+        double difLat = Math.toRadians(barLatitude - userLatitude);
+        double difLon = Math.toRadians(barLongitude - userLongitude);
+        double a = Math.sin(difLat / 2) * Math.sin(difLat / 2) + Math.cos(Math.toRadians(userLatitude))
+                * Math.cos(Math.toRadians(barLatitude)) * Math.sin(difLon / 2) * Math.sin(difLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double d = radius * c;
 
         return (int) (d * 1000);
     }
 
+    public static void print2DArray(String[][] toByPrinted) {
+        for (int i = 0; i < toByPrinted.length; i++) {
+            System.out.print(i + 1 + "\t ");
+            for (int j = 0; j < toByPrinted[i].length; j++) {
+                System.out.print("|\t\t\t\t " + toByPrinted[i][j] + "\t\t\t\t");
+            }
+            System.out.println();
+        }
+    }
+
     // OPEN BARS
+
+    public static String[][] getOpenBars(int[] openingTime, int[] closingTime) {
+        String[][] openBar = new String[getOpenBarsLength(openingTime, closingTime)][3];
+
+        int counter = 0;
+        for (int i = 0; i < openingTime.length; i++) {
+            if (openingTime[i] <= getCurrentTimeInMin() && closingTime[i] >= getCurrentTimeInMin()) {
+                openBar[counter][0] = getBarName(i);
+                openBar[counter][1] = getBarOpeningTime(i);
+                openBar[counter][2] = getBarClosingTime(i);
+                counter++;
+            }
+        }
+        return openBar;
+    }
+
     public static String[][] sortDataByClosingTime(int[] sortedTime, int[] openingTime, int[] closingTime) { //TODO check openBar length
-        String[][] openBars = new String[getOpenBarsLength(openingTime, closingTime)][3];
+        String[][] openBars;
         openBars = getOpenBars(openingTime, closingTime);
         String[][] sorted = new String[openBars.length][3];
         int counter = 0;
@@ -211,6 +224,25 @@ public class Main {
         return totalMin;
     }
 
+    public static int getOpenBarsLength(int[] openingTime, int[] closingTime) {
+        int counter = 0;
+        for (int i = 0; i < openingTime.length; i++) {
+            if (openingTime[i] <= getCurrentTimeInMin() && closingTime[i] >= getCurrentTimeInMin()) {
+                counter++;
+            }
+        }
+        return counter;
+    }
+
+    public static int getCurrentTimeInMin() {
+        Date currentTime = new Date();
+        int hour = currentTime.getHours();
+        int min = currentTime.getMinutes();
+        int currentTimeInMin = hour * 60 + min;
+
+        return currentTimeInMin;
+    }
+
     public static String getTimeInHours(String element) {
         int totalMin = Integer.parseInt(element);
         int hours = totalMin / 60;
@@ -224,70 +256,12 @@ public class Main {
         return "" + hours + ":" + min + " ч";
     }
 
-    public static String[] intToStringArray(int[] intArray) {
-        String[] stringArray = new String[intArray.length];
-        for (int i = 0; i < intArray.length; i++) {
-            stringArray[i] = "" + intArray[i];
-        }
-        return stringArray;
-    }
-
-    public static int getCurrentTimeInMin() {
-        Date currentTime = new Date();
-        int hour = currentTime.getHours();
-        int min = currentTime.getMinutes();
-        int currentTimeInMin = hour * 60 + min;
-
-        return currentTimeInMin;
-    }
-
-    public static int getOpenBarsLength(int[] openingTime, int[] closingTime) {
-        int counter = 0;
-        for (int i = 0; i < openingTime.length; i++) {
-            if (openingTime[i] <= getCurrentTimeInMin() && closingTime[i] >= getCurrentTimeInMin()) {
-                counter++;
-            }
-        }
-        return counter;
-    }
-
-    public static String[][] getOpenBars(int[] openingTime, int[] closingTime) {
-        String[][] openBar = new String[getOpenBarsLength(openingTime, closingTime)][3];
-
-        int counter = 0;
-        for (int i = 0; i < openingTime.length; i++) {
-            if (openingTime[i] <= getCurrentTimeInMin() && closingTime[i] >= getCurrentTimeInMin()) {
-                openBar[counter][0] = getBarName(i);
-                openBar[counter][1] = getBarOpeningTime(i);
-                openBar[counter][2] = getBarClosingTime(i);
-                counter++;
-            }
-        }
-        return openBar;
-    }
-
-    public static String getBarClosingTime(int i) {
-        return data[i][3];
-    }
-
-    public static String getBarOpeningTime(int i) {
-        return data[i][2];
-    }
-
-    public static String getBarCoordinates(int i) {
-        return data[i][1];
-    }
-
-    public static String getBarName(int i) {
-        return data[i][0];
-    }
-
     //MAP
     private static void loadMap(int[][][] mapOfCoordinates, char[][] map) {
         char barNum = 'a';
         for (int i = 0; i < mapOfCoordinates.length; i++) {
             for (int j = 0; j < mapOfCoordinates[i].length; j++) {
-                for (int k = 0; k < data.length; k++) {
+                for (int k = 0; k < bars.length; k++) {
                     if (amIHere(i, j, mapOfCoordinates)) {
                         map[i][j] = 'x';
                         break;
@@ -339,7 +313,7 @@ public class Main {
         System.out.println("x-\t" + "ти си тук");
         for (int i = 0; i < mapOfCoordinates.length; i++) {
             for (int j = 0; j < mapOfCoordinates[i].length; j++) {
-                for (int k = 0; k < data.length; k++) {
+                for (int k = 0; k < bars.length; k++) {
                     if (isBarHere(i, j, k, mapOfCoordinates)) {
                         System.out.println(barSymbol + "-\t" + getBarName(k));
                         barSymbol++;
@@ -358,6 +332,15 @@ public class Main {
         }
     }
 
+    public static boolean isBarHere(int index, int elementIndex, int indexForData, int[][][] mapOfCoordinates) {
+        if (mapOfCoordinates[index][elementIndex][0] == getBarCoordinatesAsInt(bars[indexForData][1], 0) &&
+                mapOfCoordinates[index][elementIndex][1] == getBarCoordinatesAsInt(bars[indexForData][1], 1)) {
+
+            return true;
+        }
+        return false;
+    }
+
     public static boolean amIHere(int index, int elementIndex, int[][][] map) { //TODO RENAME
         if (map[index][elementIndex][0] == map[map.length / 2][map[index].length / 2][0] &&
                 map[index][elementIndex][1] == map[map.length / 2][map[index].length / 2][1]) {
@@ -367,25 +350,26 @@ public class Main {
         return false;
     }
 
-    public static boolean isBarHere(int index, int elementIndex, int indexForData, int[][][] mapOfCoordinates) { //TODO RENAME
-        if (mapOfCoordinates[index][elementIndex][0] == getBarCoordinatesAsInt(data[indexForData][1], 0) &&
-                mapOfCoordinates[index][elementIndex][1] == getBarCoordinatesAsInt(data[indexForData][1], 1)) {
-
-            return true;
+    public static String[] intToStringArray(int[] intArray) {
+        String[] stringArray = new String[intArray.length];
+        for (int i = 0; i < intArray.length; i++) {
+            stringArray[i] = "" + intArray[i];
         }
-        return false;
+        return stringArray;
     }
-    public static double getDoubleInput(){
+
+    public static double getDoubleInput() {
         String input = scanner.nextLine();
-        while (!isNumeric(input)){
+        while (!isNumeric(input)) {
             input = scanner.nextLine();
         }
+
         return Double.parseDouble(input);
     }
 
-    public static int getIntegerInput(){
+    public static int getIntegerInput() {
         String input = scanner.nextLine();
-        while (!isNumeric(input)){
+        while (!isNumeric(input)) {
             input = scanner.nextLine();
         }
         return Integer.parseInt(input);
@@ -395,4 +379,21 @@ public class Main {
         String regex = "[0-9]+[\\.]?[0-9]*";
         return Pattern.matches(regex, string);
     }
+
+    public static String getBarClosingTime(int i) {
+        return bars[i][3];
+    }
+
+    public static String getBarOpeningTime(int i) {
+        return bars[i][2];
+    }
+
+    public static String getBarCoordinates(int i) {
+        return bars[i][1];
+    }
+
+    public static String getBarName(int i) {
+        return bars[i][0];
+    }
+
 }
